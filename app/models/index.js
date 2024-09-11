@@ -1,10 +1,11 @@
-const config = require("../config/db");
+const config = require("../config/db")['development'];
 
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
-  host: config.HOST,
+const sequelize = new Sequelize(config.database, config.username, config.password, {
+  host: config.host,
   dialect: config.dialect,
-  operatorsAliases: false,
+  // operatorsAliases: false,
+  logging: false,
 
   pool: {
     max: config.pool.max,
@@ -19,20 +20,4 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-// define model example
-// db.user = require("../models/User")(sequelize, Sequelize);
-
-// relation example
-// relation between role and user
-// db.role.hasMany(db.user, {
-//   as: "users",
-//   onDelete: "cascade",
-//   onUpdate: "cascade",
-// });
-
-// db.user.belongsTo(db.role, {
-//   foreignKey: "roleId",
-//   as: "role",
-// });
-
-module.exports = db;
+module.exports = global.db || db;

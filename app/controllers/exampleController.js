@@ -1,118 +1,145 @@
 const db = require("../models");
-// const Model = db.Model;
-// const { Op } = require("sequelize");
+const SuccessResult = require('../utils/SuccessResult');
+const DataNotFound = require("../utils/dataNotFound");
+const { getFromRedis, insertRedis } = require('../utils/redis')
+const { setToken } = require("../utils/jwtTokens");
 
-exports.refactoreMe1 = (req, res) => {
-  // function ini sebenarnya adalah hasil survey dri beberapa pertnayaan, yang mana nilai dri jawaban tsb akan di store pada array seperti yang ada di dataset
-  db.sequelize.query(`select * from "surveys"`).then((data) => {
-    let index1 = [];
-    let index2 = [];
-    let index3 = [];
-    let index4 = [];
-    let index5 = [];
-    let index6 = [];
-    let index7 = [];
-    let index8 = [];
-    let index9 = [];
-    let index10 = [];
 
-    data.map((e) => {
-      let values1 = e.values[0];
-      let values2 = e.values[1];
-      let values3 = e.values[2];
-      let values4 = e.values[3];
-      let values5 = e.values[4];
-      let values6 = e.values[5];
-      let values7 = e.values[6];
-      let values8 = e.values[7];
-      let values9 = e.values[8];
-      let values10 = e.values[9];
+exports.refactoreMe1 = async (_, res) => {
+  const lengthSurveyIndex = 10;
 
-      index1.push(values1);
-      index2.push(values2);
-      index3.push(values3);
-      index4.push(values4);
-      index5.push(values5);
-      index6.push(values6);
-      index7.push(values7);
-      index8.push(values8);
-      index9.push(values9);
-      index10.push(values10);
-    });
+  const queryIndexFields = mappingQueryIndex(lengthSurveyIndex)
 
-    let totalIndex1 = index1.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex2 = index2.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex3 = index3.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex4 = index4.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex5 = index5.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex6 = index6.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex7 = index7.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex8 = index8.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex9 = index9.reduce((a, b) => a + b, 0) / 10;
-    let totalIndex10 = index10.reduce((a, b) => a + b, 0) / 10;
+  const query = await db.sequelize.query(`SELECT ${queryIndexFields} FROM surveys`);
 
-    let totalIndex = [
-      totalIndex1,
-      totalIndex2,
-      totalIndex3,
-      totalIndex4,
-      totalIndex5,
-      totalIndex6,
-      totalIndex7,
-      totalIndex8,
-      totalIndex9,
-      totalIndex10,
-    ];
+  const data = query[0][0]
 
-    res.status(200).send({
-      statusCode: 200,
-      success: true,
-      data: totalIndex,
-    });
-  });
+  SuccessResult.make(res).send(mappingTotalIndex(data))
 };
 
-exports.refactoreMe2 = (req, res) => {
-  // function ini untuk menjalakan query sql insert dan mengupdate field "dosurvey" yang ada di table user menjadi true, jika melihat data yang di berikan, salah satu usernnya memiliki dosurvey dengan data false
-  Survey.create({
-    userId: req.body.userId,
-    values: req.body.values, // [] kirim array
+
+exports.refactoreMe2 = async (req, res) => {
+  const userId = req.body.userId;
+  const values = req.body.values;
+  const currentUser = await getUserById(userId);
+
+  if (currentUser.length === 0) throw new DataNotFound('User not found');
+
+  await insertAndUpdateSuryeys(userId, values)
+
+  SuccessResult.make(res).send({ userId, values }, 'Survey sent successfully!')
+
+};
+
+
+exports.getData = async (req, res) => {
+  const type = req.query.type;
+  const field = type === 'source' ? 'sourceCountry' : 'destinationCountry';
+  const dataRedis = await getFromRedis(field);
+
+  let data = [];
+
+  if (dataRedis) {
+    data = dataRedis
+
+  } else {
+
+    const selectQuery = `
+        SELECT 
+            "${field}"  AS label,
+            COUNT(*) AS total 
+        FROM attack_logs 
+        GROUP BY "${field}"
+        ORDER BY total
+  `
+    const result = await db.sequelize.query(selectQuery);
+
+    data = result[0];
+
+    await insertRedis(field, data)
+  }
+
+  const label = data.map(item => item.label);
+  const total = data.map(item => item.total);
+
+  SuccessResult.make(res).send({ label, total })
+
+};
+
+
+const getUserById = async (userId) => {
+  const selectQuery = `SELECT id FROM users WHERE id = :userId`;
+
+  const data = await db.sequelize.query(selectQuery, {
+    replacements: { userId }
   })
-    .then((data) => {
-      User.update(
-        {
-          dosurvey: true,
-        },
-        {
-          where: { id: req.body.id },
-        }
-      )
-        .then(() => {
-          console.log("success");
-        })
-        .catch((err) => console.log(err));
 
-      res.status(201).send({
-        statusCode: 201,
-        message: "Survey sent successfully!",
-        success: true,
-        data,
-      });
+  return data[0]
+}
+
+const insertAndUpdateSuryeys = async (userId, values) => {
+  await db.sequelize.transaction(async trx => {
+    const updateQuery = `
+          UPDATE 
+              users 
+          SET dosurvey  = TRUE 
+          WHERE id = :userId`;
+
+    const insertQuery = `
+          INSERT 
+                INTO surveys (values, "userId", "createdAt", "updatedAt")
+          VALUES
+                (
+                  ARRAY[:values], 
+                  :userId,
+                  current_timestamp, 
+                  current_timestamp
+                )`;
+
+
+    await db.sequelize.query(insertQuery, {
+      replacements: { values, userId },
+      transaction: trx,
     })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send({
-        statusCode: 500,
-        message: "Cannot post survey.",
-        success: false,
-      });
-    });
-};
 
-exports.callmeWebSocket = (req, res) => {
-  // do something
-};
+    await db.sequelize.query(updateQuery, {
+      replacements: { userId },
+      transaction: trx
+    })
+  })
 
-exports.getData = (req, res) => {
-  // do something
-};
+}
+
+
+const mappingTotalIndex = (data) => {
+  const totalIndex = []
+  for (const key in data) {
+    if (Object.hasOwn(data, key)) {
+      const value = Number(data[key])
+      totalIndex.push(value)
+
+    }
+  }
+
+  return totalIndex
+}
+
+const mappingQueryIndex = (lengthSurveiIndex) => {
+  let fields = '';
+  for (let index = 1; index <= lengthSurveiIndex; index++) {
+    const endOfString = index === lengthSurveiIndex ? index : index + ',';
+
+    fields += string = `SUM(COALESCE ((VALUES [${index}]), 0))/ 10 AS index${endOfString}`;
+  }
+
+  return fields
+}
+
+exports.loginSimulation = async (req, res) => {
+  const role = req.body.role;
+
+  const token = setToken({ role })
+
+  SuccessResult.make(res).send(token)
+
+}

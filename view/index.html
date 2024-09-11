@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Data Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #data {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+
+        .attack {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+        }
+
+        .counter {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WebSocket Client</h1>
+    <div class="counter" >
+        <p style="margin-right: 10px;">Data received Count :</p>
+        <p id="counter">0</p>
+    </div>
+    <p>WebSocket data will be displayed below:</p>
+
+    <div id="data">No data received yet.</div>
+
+    <script>
+        let counter = 0;
+        const ws = new WebSocket('ws://localhost:7878');
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log(data)
+            displayData(data);
+        };
+
+        function displayData(data) {
+            const dataCounter = document.getElementById('counter');
+            const dataDiv = document.getElementById('data');
+            dataDiv.innerHTML = '';
+            dataCounter.innerHTML = 0;
+
+            if (data.error) {
+                dataDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+                return;
+            }
+
+            counter++;
+            for (const element of data) {
+                const attackDiv = document.createElement('div');
+                attackDiv.classList.add('attack');
+
+                attackDiv.innerHTML = `
+                                        <strong>Attack Type:</strong> ${element.type}<br>
+                                        <strong>Source Country:</strong> ${element.sourceCountry}<br>
+                                        <strong>Destination Country:</strong> ${element.destinationCountry}<br>
+                                        <strong>Weight :</strong> ${element.weight}<br>
+                                        <strong>Type :</strong> ${element.type}<br>
+                                        <strong>Attack Time:</strong> ${new Date(element.attackTime).toLocaleString()}<br>
+                                        `;
+
+                dataDiv.appendChild(attackDiv);
+                dataCounter.innerHTML = counter
+            }
+        }
+
+        ws.onclose = () => {
+            console.log('Disconnected from WebSocket server');
+        };
+    </script>
+</body>
+
+</html>

@@ -1,44 +1,49 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const dotenv = require("dotenv");
-dotenv.config();
 const app = express();
+const http = require('node:http');
 
 const corsOptions = {
   origin: ["http://localhost:8080"],
 };
 
 app.use(cors(corsOptions));
-
-// parse requests of content-type - application/json
 app.use(bodyParser.json());
-
-// parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// database
+
 const db = require("./app/models");
 
 db.sequelize.sync();
 
-// never enable the code below in production
-// force: true will drop the table if it already exists
-// db.sequelize.sync({ force: true }).then(() => {
-//   console.log("Drop and Resync Database with { force: true }");
-//   // initial();
-// });
-
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Hello" });
-});
-
-// routes
-// require("./app/routes/exaole.routes")(app);
+require("./app/routes/exampleRoutes")(app);
 
 // set port, listen for requests
-const PORT = process.env.PORT || 7878;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
+// const PORT = process.env.PORT || 7878;
+// server.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}.`);
+// });
+
+
+// default error handler
+app.use((error, req, res, next) => {
+  if (typeof error.handle === 'function') {
+    console.log(error)
+  }
+  const code = error.code || 500
+
+  if (code === 500) {
+    error.stack += ` [Path: ${req.path}]`;
+    console.error(error);
+  }
+
+  res.status(code).json({
+    statusCode: code,
+    message: code !== 500 ? error.message : 'Something went wrong!',
+    success: false,
+  });
 });
+
+module.exports = app;
+

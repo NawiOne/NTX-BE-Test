@@ -1,5 +1,7 @@
-const { exampleMiddleware } = require("../middleware");
 const exampleController = require("../controllers/exampleController");
+const webSocketController = require('../controllers/webSocketController')
+const validation = require('../validations/validation');
+const { authMiddleware } = require('../middleware/index');
 
 module.exports = (app) => {
   app.use((req, res, next) => {
@@ -10,18 +12,37 @@ module.exports = (app) => {
     next();
   });
 
-  const router = require("express").Router();
+  const router = require("express-promise-router")()
 
-  router.get(
-    "/",
-    [exampleMiddleware.exampleMiddleware],
-    exampleController.exampleFunction
+  router.post(
+    "/token/simulation",
+    exampleController.loginSimulation
   );
 
   router.get(
-    "/",
-    [exampleMiddleware.exampleMiddleware],
-    exampleController.exampleFunction
+    "/survey",
+    authMiddleware('CUSTOMER'),
+    exampleController.refactoreMe1
+  );
+
+  router.post(
+    "/survey",
+    authMiddleware('ADMIN'),
+    validation.insertSurvey,
+    exampleController.refactoreMe2
+  );
+
+  router.get(
+    "/attack/logs",
+    authMiddleware('CUSTOMER'),
+    validation.getDataAttackLogs,
+    exampleController.getData
+  );
+
+
+  router.get(
+    "/view",
+    webSocketController.viewDataFromWebSocket
   );
 
   app.use("/api/data", router);
