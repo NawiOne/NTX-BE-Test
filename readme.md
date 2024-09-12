@@ -11,8 +11,8 @@
 
 
 
-## ChatGPT-generated files
-**You can them in ***chatgpt*** folder**
+<!-- ## ChatGPT-generated files -->
+## You can find the ChatGPT-generated files in ***chatgpt*** folder
 
 
 
