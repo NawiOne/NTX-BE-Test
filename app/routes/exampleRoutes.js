@@ -21,7 +21,7 @@ module.exports = (app) => {
 
   router.get(
     "/survey",
-    authMiddleware('CUSTOMER'),
+    authMiddleware('USER'),
     exampleController.refactoreMe1
   );
 
@@ -34,7 +34,7 @@ module.exports = (app) => {
 
   router.get(
     "/attack/logs",
-    authMiddleware('CUSTOMER'),
+    authMiddleware('USER'),
     validation.getDataAttackLogs,
     exampleController.getData
   );

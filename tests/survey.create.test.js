@@ -74,7 +74,7 @@ describe('SURVEY INSERT', () => {
     })
 
     it('should return 403, dont have permission', async () => {
-        const token = setToken({ role: 'CUSTOMER' });
+        const token = setToken({ role: 'USER' });
 
         const payload = {
             "userId": 1,

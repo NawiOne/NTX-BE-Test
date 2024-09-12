@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../server');
 const { setToken } = require('../app/utils/jwtTokens');
 
-const token = setToken({ role: 'CUSTOMER' })
+const token = setToken({ role: 'USER' })
 
 
 describe('SURVEY LIST', () => {

@@ -3,7 +3,7 @@ const app = require('../server');
 const { setToken } = require('../app/utils/jwtTokens');
 const { deleteRedis, getFromRedis } = require('../app/utils/redis')
 
-const token = setToken({ role: 'CUSTOMER' });
+const token = setToken({ role: 'USER' });
 
 
 describe('ATTACK LOGS LIST', () => {
