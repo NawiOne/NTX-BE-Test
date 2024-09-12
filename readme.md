@@ -1,7 +1,7 @@
 ## Built With
 * [Node.js][Nodejs-url]
 * [ExpressJs][Express-url]
-* [PostreSQL][Postgresql-url]
+* [PostgreSQL][Postgresql-url]
 * [Sequelize][Sequelize-url]
 * [Websocket][Ws-url]
 * [Redis][Redis-url]
