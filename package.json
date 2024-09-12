@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./bin/www",
-    "test": "jest"
+    "test": "jest",
+    "migrate": "npx sequelize-cli db:migrate",
+    "seed": "npx sequelize-cli db:seed:all"
   },
   "author": "daffaquraisy",
   "license": "ISC",

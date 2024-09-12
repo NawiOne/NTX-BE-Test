@@ -1,28 +1,134 @@
-# Instruksi khusus dalam mengerjakan ujian teknis Back-End:
+## Built With
+* [Node.js][Nodejs-url]
+* [ExpressJs][Express-url]
+* [PostreSQL][Postgresql-url]
+* [Sequelize][Sequelize-url]
+* [Websocket][Ws-url]
+* [Redis][Redis-url]
 
-0. Tanyakan semua pertanyaan di bawah ini ke ChatGPT sebelum mengerjakan sendiri. Lakukan komparasi jawabanmu dengan jawaban ChatGPT.
 
-1. Lakukan Refactor function 'refactoreMe1' dan 'refactoreMe2' agar function tersebut lebih mudah dibaca. Pada proses Refactor wajib memakai query native (raw query). Dataset disediakan di folder files.
+## Getting Started
 
-2. Buatkan endpoint berbasis websocket untuk melakukan fetch data dari api https://livethreatmap.radware.com/api/map/attacks?limit=10 dengan ketentuan fetch 3 menit sekali. Tulis code-mu di callmeWebSocket function.
 
-3. Simpan data dari https://livethreatmap.radware.com/api/map/attacks?limit=10 ke database postgres, buatkan 1 endpoint sederhana untuk mendapatkan angka jumlah "destinationCountry" yang diserang dan "sourcecountry" yang menyerang. Tulis code-mu di getData function menggunakan query native (raw query). Sesuaikan hasil respon seperti di bawah ini:
 
-```
-{
-  success:true,
-  statusCode:200,
-  data:{
-    label:["Indonesia","Singapore","China"]
-    total:[200,200,200]
-  }
-}
-```
+## ChatGPT-generated files
+**You can them in ***chatgpt*** folder**
 
-4. Implementasikan redis catching pada saat melakukan fetch endpoint yang telah dibuat sebelumnya pada nomor 3.
 
-5. Buatkan middleware autentikasi jwt untuk melakukan proteksi API dan middleware yang berfungsi membatasi endpoint lain berdasarkan role user. Contoh: User A memiliki token valid, tetapi User A tidak memiliki role valid, sehingga User A tidak dapat membuka beberapa endpoint.
 
-6. Buatkan unit test untuk melakukan test endpoint untuk memastikan endpoint tersebut berjalan dengan baik.
+### Installation
 
-7. Push hasil test ke github.
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/NawiOne/NTX-BE-Test.git
+   ```
+2. Switch to the repo folder
+   ```sh
+   cd NTX-BE-Test
+   ```
+3. Install NPM packages
+   ```sh
+   npm install
+   npm install nodemon
+   ```
+4. Enter your Key in `.env`
+   ```js
+   HOST=
+   USER=
+   PASSWORD=
+   DB=
+   JWT_SECRET_KEY=
+   REDIS_URL=
+   ```
+5. Migrate database<br>
+   you can migrate database using 
+   ```sh
+    npm run migrate
+    ```
+
+6. Seed data attack logs<br>
+   ```sh
+    npm run seed
+    ```
+  
+7. Run the application<br>
+   ```sh
+    npm start
+    ```
+
+8. If you want to run test<br>
+   ```sh
+    npm test
+    ```
+    or with the specific test file
+   ```sh
+    npm test -- tests/survey.create.test.js
+   ```
+
+## Endpoint List
+**BASE URL -> http://localhost:7878**
+
+
+***Login Simulation***<br>
+this endpoint return token in response
+
+ * POST -> /api/data/token/simulation<br>
+ ``payload``
+   ```sh
+        ADMIN/CUSTOMER
+         {
+            "role": "ADMIN" 
+         }
+   ```
+ <br>
+
+***Get Data Surveys***<br>
+ * GET -> /api/data/survey<br>
+ <br>
+
+***Post Data Survey***<br>
+
+ * POST -> /api/data/survey<br>
+ ``payload``
+   ```sh
+         {
+            "userId": 1,
+            "values": [1,2,3,4]
+         }
+   ```
+   <br>
+
+
+***View Data From Websocket***<br>
+
+ * GET -> /api/data/view<br>
+ <br>
+
+
+***Get Data Attack Logs***<br>
+
+ * GET -> /api/data/attack/logs?type=source<br>
+ ``query param``
+   ```sh
+    type = source/destination
+   ```
+   <br>
+
+
+
+
+
+
+
+
+
+
+
+
+[Nodejs-url]:https://nodejs.org/en
+[Express-url]: https://expressjs.com/
+[Postgresql-url]: https://www.postgresql.org/
+[Sequelize-url]: https://sequelize.org/
+[Ws-url]: https://www.npmjs.com/package/ws
+[Redis-url]: https://redis.io/docs/latest/

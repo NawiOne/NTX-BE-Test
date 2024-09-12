@@ -6,7 +6,7 @@ const { setToken } = require("../utils/jwtTokens");
 
 
 exports.refactoreMe1 = async (_, res) => {
-  const lengthSurveyIndex = 10;
+  const lengthSurveyIndex = 10; //this is dummy 
 
   const queryIndexFields = mappingQueryIndex(lengthSurveyIndex)
 
